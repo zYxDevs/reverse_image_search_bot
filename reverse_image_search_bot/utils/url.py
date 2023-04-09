@@ -36,10 +36,9 @@ def fix_url(url: URL | str) -> URL:
 
     match url.host:
         case "i.pximg.net":
-            art_id_match = re.match(r"^\d+", next(reversed(url.parts)))
-            if art_id_match:
+            if art_id_match := re.match(r"^\d+", next(reversed(url.parts))):
                 art_id = art_id_match[0]
-                return URL("https://www.pixiv.net/artworks/" + art_id)
+                return URL(f"https://www.pixiv.net/artworks/{art_id}")
 
     return url
 

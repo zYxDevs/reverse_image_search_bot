@@ -102,9 +102,7 @@ class BooruProvider(BaseProvider):
                 if safe_get(data, "@attributes.count"):
                     return data["post"][0]
             case _:
-                if isinstance(data, list):
-                    return next(iter(data), None)
-                return data
+                return next(iter(data), None) if isinstance(data, list) else data
 
     def source_button(self, data: dict) -> list[InlineKeyboardButton]:
         if (source := data.get("source")) and validators.url(source):
@@ -167,8 +165,7 @@ class BooruProvider(BaseProvider):
             }
             tags = {}
             for tag in main_tags:
-                kind = kinds.get(tag['type'])
-                if kind:
+                if kind := kinds.get(tag['type']):
                     tags.setdefault(kind, [])
                     tags[kind].append(tag)
 
@@ -213,14 +210,11 @@ class BooruProvider(BaseProvider):
 
         result = {
             "Title": data.get("Title"),
-            'By': None,  # Placeholder to keep the order
-            "Size": "{}x{}".format(
-                data["image_width" if api == "danbooru" else "width"],
-                data["image_height" if api == "danbooru" else "height"],
-            ),
+            'By': None,
+            "Size": f'{data["image_width" if api == "danbooru" else "width"]}x{data["image_height" if api == "danbooru" else "height"]}',
             "Rating": rating,
         }
-        result.update(self._get_tags(data))
+        result |= self._get_tags(data)
 
         meta: MetaData = {
             "provided_via": self.infos[api]["name"],

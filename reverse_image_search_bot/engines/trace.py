@@ -52,10 +52,9 @@ class TraceEngine(GenericRISEngine):
         api_link = "https://api.trace.moe/search"
         params = {"url": str(url)}
 
-        result = None
-        if not self.use_api_key:
-            result = self.session.get(api_link, params=params)
-
+        result = (
+            None if self.use_api_key else self.session.get(api_link, params=params)
+        )
         if self.use_api_key or (result is not None and result.status_code == 402):
             self.use_api_key = True
             headers = {"x-trace-key": settings.TRACE_API}
@@ -74,11 +73,11 @@ class TraceEngine(GenericRISEngine):
             "provider": self.name,
             "provider_url": self.provider_url,
         }
-        limit_reached_result = "Monthly limit reached. You can search Trace via it's button above or <b>More</b> below."
-
         data = self._fetch_data(url)
 
         if data == 402:
+            limit_reached_result = "Monthly limit reached. You can search Trace via it's button above or <b>More</b> below."
+
             meta["errors"] = [limit_reached_result]
             return {}, meta
         elif isinstance(data, int) or not data:

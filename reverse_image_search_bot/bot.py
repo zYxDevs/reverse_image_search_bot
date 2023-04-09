@@ -67,7 +67,7 @@ ADMIN_FILTER = Filters.user(user_id=settings.ADMIN_IDS)
 def error(update: Update, context: CallbackContext):
     """Log all errors from the telegram bot api"""
     logger.exception(context.error)
-    logger.warning("Error caused by this update: %s" % (update))
+    logger.warning(f"Error caused by this update: {update}")
 
 
 def main():

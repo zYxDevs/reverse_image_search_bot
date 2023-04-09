@@ -120,13 +120,15 @@ class PreWorkEngine(GenericRISEngine):
 
     @cached(_url_cache)
     def __call__(self, url: str | URL, text: str = None) -> InlineKeyboardButton | None:
-        search_url = self.get_search_link_by_url(url)
-        if not search_url:
+        if search_url := self.get_search_link_by_url(url):
+            return InlineKeyboardButton(text=text or self.name, url=search_url)
+        else:
             return
-        return InlineKeyboardButton(text=text or self.name, url=search_url)
 
     def get_search_link_by_url(self, url: str | URL) -> str | None:
         raise NotImplementedError()
 
     def empty_button(self):
-        return InlineKeyboardButton(text="⌛ " + self.name, callback_data=f"wait_for {self.name}")
+        return InlineKeyboardButton(
+            text=f"⌛ {self.name}", callback_data=f"wait_for {self.name}"
+        )
