@@ -43,7 +43,7 @@ class SauceNaoEngine(GenericRISEngine):
         return anilist.provide(data["anilist_id"], data.get("part"))  # type: ignore
 
     def _booru_provider(self, data: ResponseData, api: str) -> InternalProviderData:
-        return booru.provide(api, data[api + "_id"])  # type: ignore
+        return booru.provide(api, data[f"{api}_id"])
 
     _9_provider = lambda self, data: self._booru_provider(data, "danbooru")
     _12_provider = lambda self, data: self._booru_provider(data, "yandere")
@@ -145,9 +145,7 @@ class SauceNaoEngine(GenericRISEngine):
             self.logger.debug("Done with search: found nothing")
             return {}, meta
 
-        api_link = "https://saucenao.com/search.php?db=999&output_type=2&testmode=1&numres=8&url={}{}".format(
-            quote_plus(str(url)), f"&api_key={SAUCENAO_API}" if SAUCENAO_API else ""
-        )
+        api_link = f'https://saucenao.com/search.php?db=999&output_type=2&testmode=1&numres=8&url={quote_plus(str(url))}{f"&api_key={SAUCENAO_API}" if SAUCENAO_API else ""}'
         with self.lock:
             response = self.session.get(api_link)
 

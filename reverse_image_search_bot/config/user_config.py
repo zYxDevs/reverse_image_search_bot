@@ -17,10 +17,9 @@ def single(cls: Type["UserConfig"]):
 
         if id in cls.__loaded_users:
             return cls.__loaded_users[id]
-        else:
-            new_user = cls(id)
-            cls.__loaded_users[id] = new_user
-            return new_user
+        new_user = cls(id)
+        cls.__loaded_users[id] = new_user
+        return new_user
 
     return get_instance
 
@@ -40,7 +39,7 @@ class UserConfig:
         self.id: int = user.id if isinstance(user, User) else user
         self.last_auto_search: float | None = None
 
-        config_file = app_path / (str(self.id) + ".json")
+        config_file = app_path / f"{self.id}.json"
         self._config = CleverDict(self._default_config)
         if config_file.is_file():
             self._config.update(CleverDict.from_json(file_path=config_file))

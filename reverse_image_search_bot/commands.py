@@ -103,17 +103,16 @@ def credits_command(
     for provider in provides:
         infos = provider.infos.values() if provider.infos else [provider.info]
 
-        for info in infos:
-            data_providers.append(
-                "{name_title}{info[url]}\n{provides_title}{provides}\n{site_type_title}{info[site_type]}".format(
-                    name_title=title(info["name"]),
-                    provides_title=title("Provides"),
-                    site_type_title=title("Site Type"),
-                    provides=", ".join(map(code, info["types"])),
-                    info=info,
-                )
+        data_providers.extend(
+            "{name_title}{info[url]}\n{provides_title}{provides}\n{site_type_title}{info[site_type]}".format(
+                name_title=title(info["name"]),
+                provides_title=title("Provides"),
+                site_type_title=title("Site Type"),
+                provides=", ".join(map(code, info["types"])),
+                info=info,
             )
-
+            for info in infos
+        )
     search_engines = ""
     for engine in engines:
         parts = [title(engine.name) + str(engine.provider_url)]
@@ -205,11 +204,7 @@ def file_handler(update: Update, context: CallbackContext, message: Message = No
 def callback_query_handler(update: Update, context: CallbackContext):
     data = update.callback_query.data.split(" ")
 
-    if len(data) == 1:
-        command, values = data, []
-    else:
-        command, values = data[0], data[1:]
-
+    command, values = (data, []) if len(data) == 1 else (data[0], data[1:])
     match command:
         case "best_match":
             best_match(update, context, values[0])
@@ -232,7 +227,12 @@ def general_image_search(update: Update, image_url: URL, lock: Lock):
     """Send a reverse image search link for the image sent to us"""
     try:
         default_buttons = [
-            [InlineKeyboardButton(text="Best Match", callback_data="best_match " + str(image_url))],
+            [
+                InlineKeyboardButton(
+                    text="Best Match",
+                    callback_data=f"best_match {str(image_url)}",
+                )
+            ],
             [InlineKeyboardButton(text="Go To Image", url=str(image_url))],
         ]
         buttons = []
@@ -339,10 +339,16 @@ def best_match(update: Update, context: CallbackContext, url: str | URL, lock: L
     else:
         config.failures_in_a_row = 0
         search_message.edit_text(
-            emojize(
-                f":blue_circle: I searched for you on {engines_used_html}. You can try others above for more results."
-            )
-            + (" You may reenable /auto_search if you want." if not config.auto_search_enabled else ""),
+            (
+                emojize(
+                    f":blue_circle: I searched for you on {engines_used_html}. You can try others above for more results."
+                )
+                + (
+                    ""
+                    if config.auto_search_enabled
+                    else " You may reenable /auto_search if you want."
+                )
+            ),
             ParseMode.HTML,
         )
 
@@ -377,12 +383,11 @@ def _best_match_search(update: Update, context: CallbackContext, engines: list[G
                     identifier = meta.get("identifier")
                     thumbnail_identifier = meta.get("thumbnail_identifier")
                     if identifier in identifiers and thumbnail_identifier not in thumbnail_identifiers:
-                        result = {}
-                        result["Duplicate search result omitted"] = ""
+                        result = {"Duplicate search result omitted": ""}
                     elif identifier not in identifiers and thumbnail_identifier in thumbnail_identifiers:
                         result["Duplicate thumbnail omitted"] = ""
                         del meta["thumbnail"]
-                    elif identifier in identifiers and thumbnail_identifier in thumbnail_identifiers:
+                    elif identifier in identifiers:
                         continue
 
                     wait_for(lock)
@@ -428,7 +433,7 @@ def build_reply(result: ResultData, meta: MetaData) -> tuple[str, list[InputMedi
         reply += f" with {via}"
 
     if similarity := meta.get("similarity"):
-        reply += f" with {b(str(similarity) + '%')} similarity"
+        reply += f" with {b(f'{str(similarity)}%')} similarity"
 
     media_group = []
     if thumbnail := meta.get("thumbnail"):
@@ -453,10 +458,7 @@ def build_reply(result: ResultData, meta: MetaData) -> tuple[str, list[InputMedi
         for error in errors:
             reply += error
 
-    if media_group:
-        return reply, media_group
-
-    return reply, None
+    return (reply, media_group) if media_group else (reply, None)
 
 
 def video_to_url(attachment: Document | Video | Sticker) -> URL:
@@ -524,7 +526,7 @@ def error_to_admin(update: Update, context: CallbackContext, message: str, image
 
         send_method = getattr(
             context.bot,
-            "send_%s" % (attachment.__class__.__name__.lower() if not isinstance(attachment, PhotoSize) else "photo"),
+            f'send_{"photo" if isinstance(attachment, PhotoSize) else attachment.__class__.__name__.lower()}',
         )
         if user and send_method and user.id != 713276361:
             for admin in ADMIN_IDS:

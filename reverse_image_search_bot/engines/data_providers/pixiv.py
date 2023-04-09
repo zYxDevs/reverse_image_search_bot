@@ -44,11 +44,10 @@ class PixivProvider(BaseProvider):
         if isinstance(illust_id, str):
             if illust_id.isdigit():
                 illust_id = int(illust_id)
+            elif reg_match := re.search(r"artworks\/(\d+)", illust_id):
+                illust_id = int(reg_match.groups()[0])
             else:
-                if reg_match := re.search(r"artworks\/(\d+)", illust_id):
-                    illust_id = int(reg_match.groups()[0])
-                else:
-                    return
+                return
         data = self.api.illust_detail(illust_id)
         if data.error:
             if "Error Message: invalid_grant" in data.error.message:
@@ -61,8 +60,7 @@ class PixivProvider(BaseProvider):
     def _images(self, data) -> list[URL]:
         image_urls = []
         if 1 < data.page_count < 11:
-            for image in data.meta_pages:
-                image_urls.append(image.image_urls)
+            image_urls.extend(image.image_urls for image in data.meta_pages)
         else:
             image_urls.append(data.image_urls)
 
@@ -76,10 +74,11 @@ class PixivProvider(BaseProvider):
             urls.append((url, data.id, index))
 
         with ThreadPoolExecutor(max_workers=5) as executor:
-            for image in executor.map(self._download_image, urls):
-                if image:
-                    images.append(image)
-
+            images.extend(
+                image
+                for image in executor.map(self._download_image, urls)
+                if image
+            )
         return images
 
     def _download_image(self, url_data: tuple[str, int, int]) -> URL:

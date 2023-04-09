@@ -9,4 +9,4 @@ pre = lambda text: tag("pre", text)
 code = lambda text: tag("code", text)
 a = lambda text, href: tag("a", text, {"href": href})
 hidden_a = lambda src: a("​", src)
-title = lambda text: b(text + ":") + " "
+title = lambda text: f'{b(f"{text}:")} '
