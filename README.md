@@ -1,5 +1,16 @@
 # Reverse Image Search Bot
 
+> [!IMPORTANT]
+> **This repository is archived. Development continues closed-source.**
+>
+> The bot gained paid features (Telegram Stars subscriptions) and moved to a
+> private repository. This code is kept for reference and stays MIT licensed,
+> but it no longer matches what [@reverse_image_search_bot](https://t.me/reverse_image_search_bot)
+> runs, and it is not maintained.
+>
+> Feedback, bug reports and feature requests: use the **`/feedback`** command
+> in the bot. Pull requests and issues are closed.
+
 A Telegram bot that performs reverse image searches across multiple engines
 including Google, Yandex, SauceNAO, Trace, and more.
 
