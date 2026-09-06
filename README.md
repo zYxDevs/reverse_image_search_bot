@@ -4,7 +4,7 @@
 > **This repository is archived. Development continues closed-source.**
 >
 > The bot gained paid features (Telegram Stars subscriptions) and moved to a
-> private repository. This code is kept for reference and stays MIT licensed,
+> private repository. This code is kept for reference and stays GPL-3.0 licensed,
 > but it no longer matches what [@reverse_image_search_bot](https://t.me/reverse_image_search_bot)
 > runs, and it is not maintained.
 >
